@@ -27,9 +27,16 @@ for guides.
 
 ## Install
 
+**Homebrew** (macOS and Linux):
+
+```
+brew install su1ph3r/tap/claviger
+```
+
 **Download a release binary.** Grab the archive for your OS and architecture from
 the [latest release](https://github.com/Su1ph3r/claviger/releases/latest), verify
-it against `checksums.txt`, extract, and put `claviger` on your `PATH`.
+it against `checksums.txt`, extract, and put `claviger` on your `PATH`. Debian and
+RPM packages (`.deb`, `.rpm`) are attached for Linux.
 
 **With Go.** Requires Go 1.22 or newer:
 
