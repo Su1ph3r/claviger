@@ -1,0 +1,83 @@
+# Claviger end-to-end config template.
+#
+# The e2e harness substitutes the literal __TARGET__ placeholder with the real
+# self-signed target base URL (https://127.0.0.1:<port>) via sed before loading.
+# Each identity exercises a distinct recipe type and secret source against the
+# mock target in e2e/target/main.go. The "anon" baseline is implicit (replay
+# treats it as the unauthenticated identity), so it has no entry here.
+#
+# Secret sources exercised:
+#   alice       password_command ("printf pw")
+#   bob         ${ENV} expansion (harness exports BOB_PASSWORD=pw)
+#   alice_oauth inline password
+#   alice_multi inline password threaded through {{password}}
+#   alice_sso   inline password
+target: __TARGET__
+
+tls:
+  insecure: true
+
+identities:
+  # form recipe, password from a command.
+  - name: alice
+    type: form
+    login_url: __TARGET__/login
+    username: alice
+    password_command: "printf pw"
+    logout:
+      status_codes: [401]
+
+  # form recipe, password from the environment.
+  - name: bob
+    type: form
+    login_url: __TARGET__/login
+    username: bob
+    password: "${BOB_PASSWORD}"
+    logout:
+      status_codes: [401]
+
+  # oauth (resource-owner password) recipe.
+  - name: alice_oauth
+    type: oauth
+    token_url: __TARGET__/oauth/token
+    username: alice
+    password: pw
+    logout:
+      status_codes: [401]
+
+  # multistep recipe: fetch the CSRF form, extract the token from the body via a
+  # regex first capture group, then post the login with {{password}} and {{csrf}}.
+  - name: alice_multi
+    type: multistep
+    password: pw
+    steps:
+      - method: GET
+        url: __TARGET__/csrf-form
+        extract:
+          - name: csrf
+            from: body
+            pattern: 'name="csrf" value="([^"]+)"'
+      - method: POST
+        url: __TARGET__/csrf-login
+        form:
+          username: alice
+          password: "{{password}}"
+          csrf: "{{csrf}}"
+    logout:
+      status_codes: [401]
+
+  # browser recipe: drive the SSO login form and capture the bearer token that
+  # the success page writes into localStorage under access_token.
+  - name: alice_sso
+    type: browser
+    login_url: __TARGET__/sso
+    username: alice
+    password: pw
+    username_selector: "#user"
+    password_selector: "#pass"
+    submit_selector: "button[type=submit]"
+    success_url_contains: "/dashboard"
+    capture:
+      bearer_localstorage: access_token
+    logout:
+      status_codes: [401]

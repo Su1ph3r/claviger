@@ -1,0 +1,59 @@
+version: 2
+
+builds:
+  - main: .
+    binary: claviger
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+    goarch:
+      - amd64
+      - arm64
+    ldflags:
+      - -s -w -X github.com/Su1ph3r/claviger/cmd.version={{ .Version }}
+
+archives:
+  - formats: [tar.gz]
+    name_template: "claviger_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+
+checksum:
+  name_template: "checksums.txt"
+
+nfpms:
+  - id: packages
+    package_name: claviger
+    maintainer: Paul White <pwhite606@gmail.com>
+    description: Session authority for penetration testers.
+    license: MIT
+    homepage: https://github.com/Su1ph3r/claviger
+    formats:
+      - deb
+      - rpm
+
+# A formula (not a cask) so `brew install su1ph3r/tap/claviger` needs no trust step.
+# goreleaser deprecated brews in favor of homebrew_casks; it still builds here, and
+# the formula is the cleaner install for a CLI. Migrate to homebrew_casks if a future
+# goreleaser major removes brews.
+brews:
+  - repository:
+      owner: Su1ph3r
+      name: homebrew-tap
+    directory: Formula
+    homepage: https://github.com/Su1ph3r/claviger
+    description: Session authority for penetration testers.
+    license: MIT
+    install: |
+      bin.install "claviger"
+    test: |
+      system "#{bin}/claviger", "version"
+
+changelog:
+  use: github
+  sort: asc
+
+release:
+  footer: |
+    Install with Homebrew: `brew install Su1ph3r/tap/claviger`
+    Or with Go: `go install github.com/Su1ph3r/claviger@{{ .Tag }}`

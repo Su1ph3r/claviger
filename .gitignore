@@ -1,0 +1,9 @@
+/claviger
+/target
+/dist/
+
+# e2e harness run artifacts (generated at runtime).
+/e2e/clv.sock
+/e2e/claviger.e2e.yaml
+/e2e/target/target
+/e2e/.run/

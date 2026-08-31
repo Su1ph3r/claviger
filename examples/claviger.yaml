@@ -1,0 +1,19 @@
+# examples/claviger.yaml
+target: https://app.example.com
+identities:
+  - name: admin
+    type: oauth
+    token_url: https://app.example.com/oauth/token
+    username: admin
+    password: CHANGE_ME
+    logout:
+      status_codes: [401]
+      body_contains: unauthenticated
+  - name: user-a
+    type: form
+    login_url: https://app.example.com/login
+    username: alice
+    password: CHANGE_ME
+    logout:
+      status_codes: [401, 302]
+      location_contains: /login
